@@ -4,10 +4,12 @@ import 'package:flutter_app/src/models/Post.dart';
 class Post_List extends StatelessWidget {
   List<Post> _posts;
 
+
   Post_List({@required List<Post> posts}) : _posts = posts;
 
   @override
   Widget build(BuildContext context) {
+
     // TODO: implement build
     //    return ListView(
     //      children: this._posts

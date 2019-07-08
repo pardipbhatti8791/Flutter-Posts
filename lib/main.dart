@@ -2,9 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/src/screens/meetup_detail_screen.dart';
 import 'package:flutter_app/src/screens/post_screen.dart';
-import './src/screens/counter_home_screen.dart';
+import 'package:flutter_app/src/state/app_state.dart';
 
-void main() => runApp(MeetuperApp());
+void main() => runApp(AppStore(child: MeetuperApp()));
 
 class MeetuperApp extends StatelessWidget {
   String appTitle = "Meetuper App";

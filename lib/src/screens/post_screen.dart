@@ -3,6 +3,7 @@ import 'package:faker/faker.dart';
 
 import 'package:flutter_app/src/screens/post_list.dart';
 import 'package:flutter_app/src/services/post_api_provider.dart';
+import 'package:flutter_app/src/state/app_state.dart';
 
 import 'package:flutter_app/src/widgets/bottom_navigation.dart';
 import 'package:flutter_app/src/models/Post.dart';
@@ -39,18 +40,34 @@ class _PostScreenState extends State<PostScreen> {
   }
 
   Widget build(BuildContext context) {
+    final testingData = AppStore.of(context).testingData;
     return Scaffold(
         body: Post_List(
           posts: _posts,
         ),
         appBar: AppBar(
-          title: Text('Post Screen'),
+          title: Text(testingData),
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: _addPost,
-          tooltip: 'Add Post',
-          child: Icon(Icons.add),
-        ),
+        floatingActionButton: _PostButton(addPost: _addPost,),
         bottomNavigationBar: BottomNavigation());
+  }
+}
+
+/**
+ * @addPostButton
+ */
+class _PostButton extends StatelessWidget {
+  final Function addPost;
+
+  _PostButton({@required this.addPost });
+
+  @override
+  Widget build(BuildContext context) {
+    // TODO: implement build
+    return FloatingActionButton(
+      onPressed: addPost,
+      tooltip: 'Add Post',
+      child: Icon(Icons.add),
+    );
   }
 }
