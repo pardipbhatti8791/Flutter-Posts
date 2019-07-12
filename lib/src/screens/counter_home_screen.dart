@@ -4,7 +4,6 @@ import 'package:flutter_app/src/widgets/bottom_navigation.dart';
 
 class CounterHomeScreen extends StatefulWidget {
   final String _title;
-
   CounterHomeScreen({String title}) : _title = title;
 
   @override
@@ -12,37 +11,29 @@ class CounterHomeScreen extends StatefulWidget {
 }
 
 class CounterHomeScreenState extends State<CounterHomeScreen> {
-  final StreamController<int> _streamController =
-      StreamController<int>.broadcast();
-
-//  final StreamTransformer<int, int> _streamTransformer =
-//      StreamTransformer.fromHandlers(
-//          handleData: (int data, EventSink<int> sink) {
-//    print("calling from handle data");
-//    print(data);
-//    sink.add(data ~/ 2);
-//  });
+  final StreamController<int> _streamController = StreamController<int>.broadcast();
+  final StreamController<int> _counterController = StreamController<int>();
 
   @override
   initState() {
     super.initState();
     _streamController.stream
-//        .map((data) => data * 2)
-//        .map((data) => data - 4)
-//        .map((data) => data * data)
-//        .transform(_streamTransformer)
         .listen((int number) {
           _counter += number;
+          _counterController.sink.add(_counter);
     });
   }
 
   int _counter = 0;
 
   _increment() {
-//    setState(() {
-//      _counter++;
-//    });
     _streamController.sink.add(1);
+  }
+
+  dispose() {
+    _streamController.close();
+    _counterController.close();
+    super.dispose();
   }
 
   Widget build(BuildContext context) {
@@ -53,12 +44,27 @@ class CounterHomeScreenState extends State<CounterHomeScreen> {
               children: <Widget>[
                 Text('Welcome in ${widget._title}, lets increment numbers',
                     textDirection: TextDirection.ltr,
-                    style: TextStyle(fontSize: 15.0)),
-                Text(
-                  'Counter: $_counter',
-                  textDirection: TextDirection.ltr,
-                  style: TextStyle(fontSize: 30.0),
-                ),
+                    style: TextStyle(fontSize: 15.0),),
+                StreamBuilder(
+                  stream: _counterController.stream,
+//                  initialData: _counter,
+                  builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
+                    if(snapshot.hasData) {
+                      return Text(
+                        'Counter: ${snapshot.data}',
+                        textDirection: TextDirection.ltr,
+                        style: TextStyle(fontSize: 30.0),
+                      );
+                    } else {
+                      return Text(
+                        'Counter is sad :( No data',
+                        textDirection: TextDirection.ltr,
+                        style: TextStyle(fontSize: 30.0),
+                      );
+                    }
+                  },
+                )
+
               ]),
         ),
         appBar: AppBar(
