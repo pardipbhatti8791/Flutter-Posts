@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/blocs/counter_bloc.dart';
 import 'package:flutter_app/src/models/arguments.dart';
 import 'package:flutter_app/src/screens/counter_home_screen.dart';
 import 'package:flutter_app/src/screens/login_screen.dart';
@@ -18,8 +19,15 @@ class MeetuperApp extends StatelessWidget {
     // TODO: implement build
     return MaterialApp(
       theme: ThemeData(primarySwatch: Colors.brown),
-      home: CounterHomeScreen(
-        title: appTitle,
+      home: CounterBlocProvider(
+        child: Builder(
+          builder: (BuildContext context) {
+            return CounterHomeScreen(
+              title: appTitle,
+              bloc: CounterBlocProvider.of(context),
+            );
+          },
+        ),
       ),
 //      home: LoginScreen(),
       routes: {
@@ -30,17 +38,14 @@ class MeetuperApp extends StatelessWidget {
         if (settings.name == MeetupDetailScreen.route) {
           final MeetupDetailArguments arguments = settings.arguments;
           return MaterialPageRoute(
-            builder: (context) => MeetupDetailScreen(meetupId: arguments.id)
-          );
+              builder: (context) => MeetupDetailScreen(meetupId: arguments.id));
         }
 
         if (settings.name == LoginScreen.route) {
           final LoginScreenArguments arguments = settings.arguments;
           return MaterialPageRoute(
-            builder: (context) => LoginScreen(message: arguments?.message)
-          );
+              builder: (context) => LoginScreen(message: arguments?.message));
         }
-
       },
     );
   }
