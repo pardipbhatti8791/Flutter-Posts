@@ -6,8 +6,11 @@ import 'package:flutter_app/src/services/auth_api_service.dart';
 import 'package:flutter_app/src/utils/validators.dart';
 
 class LoginScreen extends StatefulWidget {
+  final String message;
   static final String route = '/login';
   final authApi = AuthApiService();
+
+  LoginScreen({this.message});
 
   @override
   State<StatefulWidget> createState() {
@@ -25,21 +28,30 @@ class LoginScreenState extends State<LoginScreen> {
   LoginFormData _loginData = LoginFormData();
   BuildContext _scaffoldContext;
 
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
   bool _authvalidate = false;
 
   initState() {
     super.initState();
 
-//    _emailController.addListener(() {
-//      print(_emailController.text);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkForMessage());
+  }
+
+  void _checkForMessage() {
+//    Future.delayed(Duration(), () {
+      if (widget.message != null && widget.message.isNotEmpty) {
+        Scaffold.of(_scaffoldContext).showSnackBar(
+          SnackBar(
+            content: Text(widget.message),
+          ),
+        );
+      }
 //    });
+
   }
 
   dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
+    // _emailController.dispose();
+    // _passwordController.dispose();
     super.dispose();
   }
 
@@ -136,7 +148,7 @@ class LoginScreenState extends State<LoginScreen> {
       child: Column(
         children: <Widget>[
           GestureDetector(
-            onTap: () => Navigator.pushNamed(context, RegsiterScreen.route),
+            onTap: () => Navigator.pushNamed(context, RegisterScreen.route),
             child: Text(
               'Not register yet? Register now',
               style: TextStyle(color: Theme.of(context).primaryColor),

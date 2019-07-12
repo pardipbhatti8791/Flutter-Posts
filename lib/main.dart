@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/models/arguments.dart';
+import 'package:flutter_app/src/screens/counter_home_screen.dart';
 import 'package:flutter_app/src/screens/login_screen.dart';
 import 'package:flutter_app/src/screens/meetup_detail_screen.dart';
 import 'package:flutter_app/src/screens/meetup_home_screen.dart';
@@ -16,15 +18,13 @@ class MeetuperApp extends StatelessWidget {
     // TODO: implement build
     return MaterialApp(
       theme: ThemeData(primarySwatch: Colors.brown),
-//      home: CounterHomeScreen(
-//        title: appTitle,
-//      ),
-//      home: PostScreen(),
-      home: LoginScreen(),
+      home: CounterHomeScreen(
+        title: appTitle,
+      ),
+//      home: LoginScreen(),
       routes: {
         MeetupHomeScreen.route: (context) => MeetupHomeScreen(),
-        LoginScreen.route: (context) => LoginScreen(),
-        RegsiterScreen.route: (context) => RegsiterScreen(),
+        RegisterScreen.route: (context) => RegisterScreen(),
       },
       onGenerateRoute: (RouteSettings settings) {
         if (settings.name == MeetupDetailScreen.route) {
@@ -33,6 +33,14 @@ class MeetuperApp extends StatelessWidget {
             builder: (context) => MeetupDetailScreen(meetupId: arguments.id)
           );
         }
+
+        if (settings.name == LoginScreen.route) {
+          final LoginScreenArguments arguments = settings.arguments;
+          return MaterialPageRoute(
+            builder: (context) => LoginScreen(message: arguments?.message)
+          );
+        }
+
       },
     );
   }
