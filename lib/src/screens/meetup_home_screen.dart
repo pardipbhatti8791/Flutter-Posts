@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/blocs/auth_bloc/auth_bloc.dart';
+import 'package:flutter_app/src/blocs/bloc_provider.dart';
+import 'package:flutter_app/src/blocs/meetup_bloc.dart';
 import 'package:flutter_app/src/models/Meetup.dart';
 import 'package:flutter_app/src/screens/meetup_detail_screen.dart';
 import 'package:flutter_app/src/services/auth_api_service.dart';
-import 'package:flutter_app/src/services/meetup_api_service.dart';
 
 class MeetupDetailArguments {
   final String id;
@@ -12,7 +14,6 @@ class MeetupDetailArguments {
 
 class MeetupHomeScreen extends StatefulWidget {
   static final String route = '/meetups';
-  final MeetupApiService _api = MeetupApiService();
 
   @override
   State<StatefulWidget> createState() {
@@ -23,18 +24,14 @@ class MeetupHomeScreen extends StatefulWidget {
 
 class MeetupHomeScreenState extends State<MeetupHomeScreen> {
   List<Meetup> meetups = [];
+  AuthBloc authBloc;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-
-    _fetchMeetups();
-  }
-
-  _fetchMeetups() async {
-    final meetups = await widget._api.fetchMeetups();
-    setState(() => this.meetups = meetups);
+    BlocProvider.of<MeetupBloc>(context).fetchMeetups();
+    authBloc = BlocProvider.of<AuthBloc>(context);
   }
 
   @override
@@ -50,10 +47,8 @@ class MeetupHomeScreenState extends State<MeetupHomeScreen> {
       ),
       body: Column(
         children: [
-          _MeetupTitle(),
-          _MeetupList(
-            meetups: meetups,
-          )
+          _MeetupTitle(authBloc: authBloc,),
+          _MeetupList()
         ],
       ),
     );
@@ -61,9 +56,12 @@ class MeetupHomeScreenState extends State<MeetupHomeScreen> {
 }
 
 class _MeetupTitle extends StatelessWidget {
-
-
   final AuthApiService auth = AuthApiService();
+  final AuthBloc authBloc;
+
+  _MeetupTitle({@required this.authBloc });
+
+
 
   _buildWelcomeTitle()  {
 
@@ -84,7 +82,7 @@ class _MeetupTitle extends StatelessWidget {
                   Spacer(),
                   GestureDetector(
                     onTap: () {
-                      auth.logout().then((isLogout) => Navigator.pushNamedAndRemoveUntil(context, '/login', (Route<dynamic> route) => false));
+                      auth.logout().then((isLogout) => authBloc.dispatch(LoggedOut()) );
                     },
                     child: Text(
                       'Logout',
@@ -163,18 +161,22 @@ class _MeetupCard extends StatelessWidget {
 }
 
 class _MeetupList extends StatelessWidget {
-  final List<Meetup> meetups;
-
-  _MeetupList({@required this.meetups});
-
   Widget build(BuildContext context) {
     return Expanded(
-      child: ListView.builder(
-        itemCount: meetups.length,
-        itemBuilder: (BuildContext cntext, int i) {
-          if (i.isOdd) return Divider();
+      child: StreamBuilder<List<Meetup>>(
+        stream: BlocProvider.of<MeetupBloc>(context).meetups,
+        initialData: [],
+        builder: (BuildContext context, AsyncSnapshot<List<Meetup>> snapshot) {
 
-          return _MeetupCard(meetup: meetups[i]);
+          var meetups = snapshot.data;
+          return ListView.builder(
+            itemCount: meetups.length,
+            itemBuilder: (BuildContext context, int i) {
+              Divider();
+
+              return _MeetupCard(meetup: meetups[i]);
+            },
+          );
         },
       ),
     );

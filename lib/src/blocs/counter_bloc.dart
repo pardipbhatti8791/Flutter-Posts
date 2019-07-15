@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/blocs/bloc_provider.dart';
 
-class CounterBloc {
+class CounterBloc extends BlocBase {
   final  StreamController<int> _streamController = StreamController<int>.broadcast();
   final StreamController<int> _counterController = StreamController<int>();
 
@@ -30,17 +31,48 @@ class CounterBloc {
   }
 }
 
-class CounterBlocProvider extends InheritedWidget {
+class CounterBlocProvider extends StatefulWidget {
+  final CounterBloc bloc;
+  final Widget child;
+
+  CounterBlocProvider({Key key, @required this.child}): bloc = CounterBloc(), super(key: key);
+
+  @override
+  _CounterBlocProviderState createState() => _CounterBlocProviderState();
+
+  static CounterBloc of(BuildContext context) {
+    _CounterBlocProviderInheited provider = (context.ancestorInheritedElementForWidgetOfExactType(_CounterBlocProviderInheited).widget as _CounterBlocProviderInheited);
+
+    return provider.bloc;
+  }
+
+}
+
+class _CounterBlocProviderState extends State<CounterBlocProvider> {
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    widget.bloc.dispose();
+    super.dispose();
+
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // TODO: implement build
+    return _CounterBlocProviderInheited(
+      child: widget.child,
+      bloc: widget.bloc
+    );
+  }
+}
+
+class _CounterBlocProviderInheited extends InheritedWidget {
   final CounterBloc bloc;
 
-  CounterBlocProvider({ Widget child, Key key })
-  : bloc = CounterBloc(), super(key: key, child: child);
+  _CounterBlocProviderInheited({ @required Widget child, @required this.bloc, Key key }): super(key: key, child: child);
 
   @override
   bool updateShouldNotify(InheritedWidget oldWidget) => true;
-
-  static CounterBloc of(BuildContext context) {
-    return (context.inheritFromWidgetOfExactType(CounterBlocProvider)as CounterBlocProvider).bloc;
-  }
-
 }

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/blocs/bloc_provider.dart';
+import 'package:flutter_app/src/blocs/meetup_bloc.dart';
 import 'package:flutter_app/src/models/Meetup.dart';
+import 'package:flutter_app/src/services/auth_api_service.dart';
 import 'package:flutter_app/src/services/meetup_api_service.dart';
 
 class MeetupDetailScreen extends StatefulWidget {
@@ -14,53 +17,94 @@ class MeetupDetailScreen extends StatefulWidget {
 }
 
 class MeetupDetailScreenState extends State<MeetupDetailScreen> {
-  Meetup meetup;
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    _fetchMeetup();
-  }
 
-  _fetchMeetup() async {
-    final meetup = await widget.api.fetchMeetupById(widget.meetupId);
-    setState(() {
-      this.meetup = meetup;
-    });
+  @override
+  void didChangeDependencies() {
+    // TODO: implement didChangeDependencies
+    super.didChangeDependencies();
+
+    BlocProvider.of<MeetupBloc>(context).fetchMeetup(widget.meetupId);
   }
 
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
     return Scaffold(
-        appBar: AppBar(
-          title: Text("Meetup Details"),
-        ),
-        body: meetup != null
-            ? ListView(
-                children: <Widget>[
-                  HeaderSection(
-                    meetup: meetup,
+      appBar: AppBar(
+        title: Text("Meetup Details"),
+      ),
+      floatingActionButton: _MeetupActionButton(),
+      body: StreamBuilder<Meetup>(
+        stream: BlocProvider.of<MeetupBloc>(context).meetup,
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          if (snapshot.hasData) {
+            final meetup = snapshot.data;
+            return ListView(
+              children: <Widget>[
+                HeaderSection(
+                  meetup: meetup,
+                ),
+                TitleSection(
+                  meetup: meetup,
+                ),
+                AdditionalInfoSection(
+                  meetup: meetup,
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(32.0),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(meetup.description),
                   ),
-                  TitleSection(
-                    meetup: meetup,
-                  ),
-                  AdditionalInfoSection(meetup: meetup,),
-                  Padding(
-                    padding: const EdgeInsets.all(32.0),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        meetup.description
-                      ),
-                    ),
-                  )
-                ],
-              )
-            : Container(
-                width: 0,
-                height: 0,
-              ));
+                )
+              ],
+            );
+          } else {
+            return Container(
+              width: 0,
+              height: 0,
+            );
+          }
+        },
+      ),
+    );
+  }
+}
+
+class _MeetupActionButton extends StatelessWidget {
+  final AuthApiService auth = AuthApiService();
+  @override
+  Widget build(BuildContext context) {
+    // TODO: implement build
+    return FutureBuilder<bool>(
+      future: auth.isAuthenticated(),
+      builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
+        if(snapshot.hasData && snapshot.data) {
+          // TODO: Check if user is meetup owner or check if user is already member
+          final isMember = false;
+          if(isMember) {
+            return FloatingActionButton(
+              child: Icon(Icons.exit_to_app),
+              onPressed: () {},
+              backgroundColor: Colors.red,
+              tooltip: 'Leave Meetup',
+            );
+          } else {
+            return FloatingActionButton(
+              child: Icon(Icons.person_add),
+              onPressed: () {},
+              backgroundColor: Colors.green,
+              tooltip: 'Join Meetup',
+            );
+          }
+
+        } else {
+          return Container(width: 0, height: 0,);
+        }
+      },
+    );
+
+
   }
 }
 
@@ -68,9 +112,11 @@ class AdditionalInfoSection extends StatelessWidget {
   final Meetup meetup;
 
   AdditionalInfoSection({this.meetup});
-  
+
   _captilize(String word) {
-    return (word != null && word.isNotEmpty) ? word[0].toUpperCase() + word.substring(1) : '';
+    return (word != null && word.isNotEmpty)
+        ? word[0].toUpperCase() + word.substring(1)
+        : '';
   }
 
   Widget _buildColumn(String label, String text, Color color) {
@@ -102,7 +148,6 @@ class AdditionalInfoSection extends StatelessWidget {
         _buildColumn('CATEGORY', meetup.category.name, color),
         _buildColumn('FROM', meetup.timeFrom, color),
         _buildColumn('TO', meetup.timeTo, color)
-
       ],
     );
   }
