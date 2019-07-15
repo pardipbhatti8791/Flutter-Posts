@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/blocs/auth_bloc/auth_bloc.dart';
+import 'package:flutter_app/src/blocs/bloc_provider.dart';
 import 'package:flutter_app/src/models/forms.dart';
 import 'package:flutter_app/src/screens/meetup_home_screen.dart';
 import 'package:flutter_app/src/screens/register_screen.dart';
@@ -25,6 +27,8 @@ class LoginScreenState extends State<LoginScreen> {
   final GlobalKey<FormFieldState<String>> _emailKey =
       GlobalKey<FormFieldState<String>>();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  AuthBloc _authBloc;
+
   LoginFormData _loginData = LoginFormData();
   BuildContext _scaffoldContext;
 
@@ -32,12 +36,11 @@ class LoginScreenState extends State<LoginScreen> {
 
   initState() {
     super.initState();
-
+    _authBloc = BlocProvider.of<AuthBloc>(context);
     WidgetsBinding.instance.addPostFrameCallback((_) => _checkForMessage());
   }
 
   void _checkForMessage() {
-//    Future.delayed(Duration(), () {
       if (widget.message != null && widget.message.isNotEmpty) {
         Scaffold.of(_scaffoldContext).showSnackBar(
           SnackBar(
@@ -45,23 +48,17 @@ class LoginScreenState extends State<LoginScreen> {
           ),
         );
       }
-//    });
-
-  }
-
-  dispose() {
-    // _emailController.dispose();
-    // _passwordController.dispose();
-    super.dispose();
   }
 
   void _login() {
-    widget.authApi.login(_loginData).then((data) {
-      Navigator.pushNamed(context, MeetupHomeScreen.route);
-    }).catchError((err) {
-      Scaffold.of(_scaffoldContext).showSnackBar(SnackBar(
-        content: Text(err['errors']['message']),
-      ));
+    _authBloc.dispatch(InitLogging());
+    widget.authApi
+        .login(_loginData)
+        .then((data) {
+      _authBloc.dispatch(LoggedIn());
+    })
+        .catchError((res) {
+      _authBloc.dispatch(LoggedOut(message: res['errors']['message']));
     });
   }
 

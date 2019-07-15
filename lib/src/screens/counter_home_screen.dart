@@ -1,5 +1,6 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/src/blocs/bloc_provider.dart';
+import 'package:flutter_app/src/blocs/counter_bloc.dart';
 import 'package:flutter_app/src/widgets/bottom_navigation.dart';
 
 class CounterHomeScreen extends StatefulWidget {
@@ -11,30 +12,17 @@ class CounterHomeScreen extends StatefulWidget {
 }
 
 class CounterHomeScreenState extends State<CounterHomeScreen> {
-  final StreamController<int> _streamController = StreamController<int>.broadcast();
-  final StreamController<int> _counterController = StreamController<int>();
+  CounterBloc counterBloc;
 
-  @override
-  initState() {
-    super.initState();
-    _streamController.stream
-        .listen((int number) {
-          _counter += number;
-          _counterController.sink.add(_counter);
-    });
+  didChangeDependencies() {
+    super.didChangeDependencies();
+    counterBloc = BlocProvider.of<CounterBloc>(context);
   }
-
-  int _counter = 0;
 
   _increment() {
-    _streamController.sink.add(1);
+    counterBloc.increment(1);
   }
 
-  dispose() {
-    _streamController.close();
-    _counterController.close();
-    super.dispose();
-  }
 
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,8 +34,7 @@ class CounterHomeScreenState extends State<CounterHomeScreen> {
                     textDirection: TextDirection.ltr,
                     style: TextStyle(fontSize: 15.0),),
                 StreamBuilder(
-                  stream: _counterController.stream,
-//                  initialData: _counter,
+                  stream: counterBloc.counterStream,
                   builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
                     if(snapshot.hasData) {
                       return Text(
